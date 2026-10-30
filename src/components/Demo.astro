@@ -1,0 +1,38 @@
+---
+// The create-ollin starter game, running on the published package.
+---
+
+<figure class="demo">
+  <canvas aria-label="Ollin demo: catch the falling petals with the xolo"></canvas>
+  <figcaption>The game <code>npm create ollin</code> gives you. Hold the mouse or a finger where the xolo should go.</figcaption>
+</figure>
+
+<script>
+  import { createGame, input, webgl2 } from '@tlapalli/ollin'
+  import { play } from '../demo/game'
+
+  const canvas = document.querySelector<HTMLCanvasElement>('.demo canvas')!
+  canvas.width = canvas.clientWidth * devicePixelRatio
+  canvas.height = canvas.clientHeight * devicePixelRatio
+  const game = await createGame({ canvas, plugins: [webgl2({ background: [0.07, 0.05, 0.09, 1] }), input()] })
+  await game.scene(play)
+  game.start()
+</script>
+
+<style>
+  .demo {
+    margin: 0;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 0.5rem;
+    border: 1px solid var(--sl-color-gray-5);
+  }
+  figcaption {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+    margin-top: 0.5rem;
+  }
+</style>
