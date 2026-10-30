@@ -2,21 +2,22 @@
 import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
 
-// ponytail: served from GitHub Pages under /ollin-site; with a custom domain, set `site` to it and drop `base`.
+// GitHub Pages org site (repo Tlapalli/tlapalli.github.io). With a custom domain, change `site` (and add public/CNAME).
+// Pages build links with `href()`, so a `base` path would also work if the site ever moves under one.
 export default defineConfig({
   site: 'https://tlapalli.github.io',
-  base: '/ollin-site',
   integrations: [
     starlight({
-      title: 'Ollin',
-      description: 'A fast 2D/2.5D game engine in TypeScript, with a small friendly API.',
-      logo: { src: './src/assets/ollin.svg' },
-      customCss: ['./src/styles/custom.css'],
+      title: 'Ollin docs',
+      description: 'Documentation of Ollin, the TypeScript 2D/2.5D game engine by Tlapalli.',
+      logo: { src: './src/assets/brand/ollin.png' },
+      favicon: '/favicon.png',
+      customCss: ['@fontsource-variable/unbounded', '@fontsource-variable/inter', './src/styles/docs.css'],
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/Tlapalli/ollin' }],
-      editLink: { baseUrl: 'https://github.com/Tlapalli/ollin-site/edit/main/' },
+      editLink: { baseUrl: 'https://github.com/Tlapalli/tlapalli.github.io/edit/main/' },
       sidebar: [
-        { label: 'Getting started', slug: 'getting-started' },
-        { label: 'Guide', slug: 'guide' },
+        { label: 'Getting started', slug: 'docs/getting-started' },
+        { label: 'Guide', slug: 'docs/guide' },
       ],
     }),
   ],

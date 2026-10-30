@@ -1,0 +1,25 @@
+/* Docs theme: the studio palette on Starlight. tlapalli (red ink), xihuitl (turquoise), cempasúchil (marigold), amatl (paper), tlilli (black ink). */
+:root {
+  --sl-font: 'Inter Variable', system-ui, sans-serif;
+  --sl-color-accent-low: #2b1a10;
+  --sl-color-accent: #f28c28;
+  --sl-color-accent-high: #fbd9b4;
+}
+
+:root:not([data-theme='light']) {
+  --sl-color-black: #120d17;
+  --sl-color-gray-6: #1d1624;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #f6d9d5;
+  --sl-color-accent: #b5302a;
+  --sl-color-accent-high: #5c1714;
+}
+
+.site-title,
+.sl-markdown-content :is(h1, h2, h3),
+h1#_top {
+  font-family: 'Unbounded Variable', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}

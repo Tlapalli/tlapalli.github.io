@@ -1,0 +1,318 @@
+/* Tlapalli studio pages. Palette from the codices: tlapalli (red ink), tlilli (black ink), xihuitl (turquoise),
+   cempasúchil (marigold), amatl (bark paper), on a night background. */
+:root {
+  --night: #120d17;
+  --night-2: #1b1422;
+  --night-3: #261c2f;
+  --tlapalli: #b5302a;
+  --tlapalli-bright: #d9473f;
+  --tlilli: #1b1b1b;
+  --xihuitl: #1f9e9a;
+  --cempa: #f28c28;
+  --amatl: #f3e6c9;
+  --amatl-2: #e8d6ad;
+  --ink: #f6eedd;
+  --ink-2: #c9bcae;
+  --ink-3: #9a8c9f;
+  --line: rgb(243 230 201 / 0.12);
+  --display: 'Unbounded Variable', system-ui, sans-serif;
+  --body: 'Inter Variable', system-ui, sans-serif;
+  --radius: 14px;
+  --wrap: min(1180px, 100% - 32px);
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--ink);
+  font: 400 1.0625rem/1.65 var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.wrap {
+  width: var(--wrap);
+  margin-inline: auto;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font: 600 0.78rem/1 var(--display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cempa);
+}
+
+.eyebrow::before {
+  content: '';
+  width: 22px;
+  height: 3px;
+  background: currentColor;
+  border-radius: 2px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.85rem 1.35rem;
+  border-radius: 999px;
+  font: 600 0.95rem/1 var(--display);
+  text-decoration: none;
+  border: 2px solid transparent;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background: var(--cempa);
+  color: var(--tlilli);
+  box-shadow: 0 6px 0 #a85a12;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 8px 0 #a85a12;
+}
+
+.btn-ghost {
+  border-color: rgb(243 230 201 / 0.35);
+  color: var(--ink);
+}
+
+.btn-ghost:hover {
+  border-color: var(--ink);
+}
+
+.btn:focus-visible,
+a:focus-visible,
+button:focus-visible,
+canvas:focus-visible {
+  outline: 3px solid var(--cempa);
+  outline-offset: 3px;
+}
+
+/* Top bar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.85rem max(16px, (100% - 1180px) / 2);
+  background: rgb(18 13 23 / 0.82);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font: 700 1.15rem/1 var(--display);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+/* The studio mark: red ink and black ink, on bark paper. */
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+}
+
+.topbar nav {
+  display: flex;
+  gap: 1.4rem;
+  margin-left: auto;
+}
+
+.topbar nav a {
+  text-decoration: none;
+  color: var(--ink-2);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.topbar nav a:hover {
+  color: var(--ink);
+}
+
+.topbar-gh {
+  color: var(--ink-2);
+  display: flex;
+}
+
+.topbar-gh:hover {
+  color: var(--ink);
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    gap: 1rem;
+  }
+  .topbar nav {
+    gap: 1rem;
+  }
+  .topbar nav a:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .topbar nav {
+    display: none;
+  }
+  .topbar-gh {
+    margin-left: auto;
+  }
+}
+
+/* Sections */
+.section {
+  padding: clamp(4rem, 9vw, 7.5rem) 0;
+}
+
+.section-head {
+  display: grid;
+  gap: 1rem;
+  max-width: 720px;
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+
+.section-head h2 {
+  font-size: clamp(1.9rem, 4.2vw, 3rem);
+}
+
+.section-head p {
+  color: var(--ink-2);
+  font-size: 1.125rem;
+}
+
+.paper {
+  background: var(--amatl);
+  color: var(--tlilli);
+  background-image: radial-gradient(rgb(27 27 27 / 0.05) 1px, transparent 1px);
+  background-size: 6px 6px;
+}
+
+.paper .eyebrow {
+  color: var(--tlapalli);
+}
+
+.paper .section-head p,
+.paper p {
+  color: #3d3330;
+}
+
+/* Step-fret border (stepped pyramids in black ink on red). */
+.greca {
+  height: 18px;
+  background: var(--tlapalli)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='18'%3E%3Cpath fill='%231b1b1b' d='M0 18v-4h6v-4h6V6h6V2h12v4h6v4h6v4h6v4z'/%3E%3C/svg%3E")
+    repeat-x bottom / 48px 18px;
+}
+
+/* Cards */
+.card {
+  background: var(--night-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* Footer */
+.footer {
+  background: var(--tlilli);
+}
+
+.footer-inner {
+  width: var(--wrap);
+  margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 3rem 0 2rem;
+}
+
+.footer-inner p {
+  color: var(--ink-3);
+  margin-top: 0.75rem;
+  max-width: 34ch;
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 0.6rem 2.5rem;
+  align-content: start;
+}
+
+.footer-links a {
+  color: var(--ink-2);
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: var(--ink);
+}
+
+.footer-legal {
+  width: var(--wrap);
+  margin-inline: auto;
+  padding: 1.25rem 0 2rem;
+  border-top: 1px solid var(--line);
+  color: var(--ink-3);
+  font-size: 0.85rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .btn {
+    transition: none;
+  }
+}

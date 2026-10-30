@@ -1,38 +1,88 @@
 ---
-// The create-ollin starter game, running on the published package.
+// A game running live on the published @tlapalli/ollin: `xolo` (the full game, examples/xolo in the engine repo)
+// or `starter` (the create-ollin template game).
+interface Props {
+  game: 'xolo' | 'starter'
+}
+const { game } = Astro.props
+const hint =
+  game === 'xolo'
+    ? 'Click or tap to start. Arrows / WASD, a gamepad, or hold the mouse or a finger where the xolo should go. Sound on.'
+    : 'Mouse or finger: hold where the xolo should go. Keyboard: click the game, then ← → .'
+const label = game === 'xolo' ? 'Xolo, a playable game' : 'The create-ollin starter game, playable'
 ---
 
-<figure class="demo">
-  <canvas aria-label="Ollin demo: catch the falling petals with the xolo"></canvas>
-  <figcaption>The game <code>npm create ollin</code> gives you. Hold the mouse or a finger where the xolo should go.</figcaption>
-</figure>
+<div class="demo" data-game={game}>
+  <div class="demo-bar" aria-hidden="true">
+    <span></span><span></span><span></span>
+    <em>live · @tlapalli/ollin</em>
+  </div>
+  <canvas tabindex="0" aria-label={label}></canvas>
+  <p class="demo-hint">{hint}</p>
+</div>
 
 <script>
-  import { createGame, input, webgl2 } from '@tlapalli/ollin'
-  import { play } from '../demo/game'
+  import { audio, createGame, input, webgl2 } from '@tlapalli/ollin'
 
-  const canvas = document.querySelector<HTMLCanvasElement>('.demo canvas')!
-  canvas.width = canvas.clientWidth * devicePixelRatio
-  canvas.height = canvas.clientHeight * devicePixelRatio
-  const game = await createGame({ canvas, plugins: [webgl2({ background: [0.07, 0.05, 0.09, 1] }), input()] })
-  await game.scene(play)
-  game.start()
+  for (const demo of document.querySelectorAll<HTMLElement>('.demo')) {
+    const canvas = demo.querySelector('canvas')!
+    canvas.width = canvas.clientWidth * devicePixelRatio
+    canvas.height = canvas.clientHeight * devicePixelRatio
+    // Arrow keys, space and enter play the game instead of scrolling the page while the game has focus.
+    canvas.addEventListener('keydown', (e) => {
+      if (e.code.startsWith('Arrow') || e.code === 'Space' || e.code === 'Enter') e.preventDefault()
+    })
+    canvas.addEventListener('pointerdown', () => canvas.focus({ preventScroll: true }))
+    const xolo = demo.dataset.game === 'xolo'
+    const plugins = [webgl2({ background: [0.07, 0.05, 0.09, 1] }), input(), ...(xolo ? [audio()] : [])]
+    const game = await createGame({ canvas, plugins })
+    await game.scene(xolo ? (await import('../xolo/scenes')).menu : (await import('../demo/game')).play)
+    game.start()
+  }
 </script>
 
 <style>
   .demo {
-    margin: 0;
+    background: #0b080e;
+    border: 1px solid rgb(243 230 201 / 0.14);
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: 0 30px 80px -30px rgb(242 140 40 / 0.35), 0 0 0 6px rgb(181 48 42 / 0.12);
+  }
+  .demo-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 6px 10px;
+  }
+  .demo-bar span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #b5302a;
+  }
+  .demo-bar span:nth-child(2) {
+    background: #f28c28;
+  }
+  .demo-bar span:nth-child(3) {
+    background: #1f9e9a;
+  }
+  .demo-bar em {
+    margin-left: auto;
+    font: 500 0.75rem/1 ui-monospace, monospace;
+    font-style: normal;
+    color: #9a8c9f;
   }
   canvas {
     display: block;
     width: 100%;
     aspect-ratio: 16 / 9;
-    border-radius: 0.5rem;
-    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 8px;
+    touch-action: none;
   }
-  figcaption {
-    font-size: var(--sl-text-sm);
-    color: var(--sl-color-gray-3);
-    margin-top: 0.5rem;
+  .demo-hint {
+    font-size: 0.85rem;
+    color: #9a8c9f;
+    padding: 10px 6px 2px;
   }
 </style>

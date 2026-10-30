@@ -1,0 +1,425 @@
+---
+import { Image } from 'astro:assets'
+import { Code } from 'astro:components'
+import Studio from '../../layouts/Studio.astro'
+import Demo from '../../components/Demo.astro'
+import { href } from '../../href'
+import engineArt from '../../assets/art/ollin-engine.jpg'
+import glyph from '../../assets/brand/ollin.png'
+
+const sample = `import { createGame, defineComponent, f32, input, Position, Renderer, Sprite, webgl2 } from '@tlapalli/ollin'
+
+const game = await createGame({ canvas, plugins: [webgl2(), input()] })
+const texture = await game.get(Renderer).loadTexture('xolo.png')
+const Velocity = defineComponent({ x: f32, y: f32 })
+
+game.world.spawn([Position, { x: 100, y: 100 }], [Velocity, { x: 60 }], [Sprite, { w: 32, h: 32, texture }])
+
+const moving = game.world.query(Position, Velocity)
+game.system((dt) => {
+  for (const e of moving.entities) {
+    Position.x[e] += Velocity.x[e] * dt
+    Position.y[e] += Velocity.y[e] * dt
+  }
+})
+game.start()`
+
+// examples/bench in the engine repo: main-thread ms per frame, Chromium, vsync on, Apple M4 Max with the CPU throttled 4x.
+const bench = [
+  { sprites: '1,000', ollin: 0.07, image: 0.33, layer: 0.16 },
+  { sprites: '5,000', ollin: 0.28, image: 1.58, layer: 0.9 },
+  { sprites: '10,000', ollin: 0.78, image: 2.94, layer: 1.93 },
+  { sprites: '20,000', ollin: 1.97, image: 7.06, layer: 3.99 },
+]
+const top = bench[3]
+const bars = [
+  { label: 'Ollin', ms: top.ollin, ours: true },
+  { label: 'Phaser 4 · GPU layer', ms: top.layer },
+  { label: 'Phaser 4 · Image objects', ms: top.image },
+]
+const max = Math.max(...bars.map((b) => b.ms))
+
+const features = [
+  { title: 'Data-oriented ECS', body: 'Components are typed arrays that go straight to the GPU. No objects per sprite, no garbage per frame.' },
+  { title: 'WebGL2 and WebGPU', body: 'One renderer core, two backends with the same API and output. WebGPU falls back to WebGL2.' },
+  { title: 'Smooth on 120 Hz', body: 'A fixed-step simulation, drawn interpolated, so motion stays smooth on any display.' },
+  { title: 'Rapier physics', body: 'Dynamic, fixed and kinematic bodies through WASM, as an optional plugin.' },
+  { title: '2.5D and Tiled', body: 'z layers, y-sorted layers, and orthogonal or isometric maps from Tiled.' },
+  { title: 'GPU particles', body: 'Bursts computed entirely in the vertex shader: zero CPU work per frame.' },
+  { title: 'Text with accents', body: 'Bitmap text from any web font, with á, ñ, ¿¡ and Nahuatl macron vowels.' },
+  { title: 'Hot reload and devtools', body: 'Save and the scene restarts in place. Inspect any sprite with one click.' },
+]
+---
+
+<Studio
+  title="Ollin · A fast 2D game engine for the web, by Tlapalli"
+  description="Ollin is a TypeScript 2D/2.5D game engine with a data-oriented core: WebGL2 and WebGPU, Rapier physics, Tiled maps, and a small friendly API."
+>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">Open source · by Tlapalli</span>
+        <h1><Image src={glyph} alt="" class="glyph" width={144} height={144} />Ollin</h1>
+        <p class="tagline">The 2D game engine that leaves the frame budget to your game.</p>
+        <p>A TypeScript engine for the web with a data-oriented core and a small, friendly API. <em>Ollin</em> (say <em>OHL-leen</em>) is Nahuatl for <em>movement</em>.</p>
+        <div class="install">
+          <code id="cmd">npm create ollin@latest my-game</code>
+          <button type="button" data-copy="#cmd" aria-label="Copy the command">Copy</button>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary" href={href('/docs/getting-started/')}>Get started</a>
+          <a class="btn btn-ghost" href="https://github.com/Tlapalli/ollin">GitHub</a>
+        </div>
+        <p class="meta">MIT · <a href="https://www.npmjs.com/package/@tlapalli/ollin">@tlapalli/ollin</a> 0.1 alpha · TypeScript</p>
+      </div>
+      <Image src={engineArt} alt="The Nahui Ollin glyph turning like a machine, with small sprites orbiting it" class="hero-art" widths={[640, 1100]} sizes="(max-width: 900px) 100vw, 560px" loading="eager" />
+    </div>
+  </section>
+
+  <div class="greca" aria-hidden="true"></div>
+
+  <section class="section">
+    <div class="wrap">
+      <header class="section-head">
+        <span class="eyebrow">Try it</span>
+        <h2>This is the game you start with</h2>
+        <p><code>npm create ollin</code> gives you this game in about 100 lines you can read in one sitting. It is running here on the published package.</p>
+      </header>
+      <Demo game="starter" />
+    </div>
+  </section>
+
+  <section class="section alt">
+    <div class="wrap split">
+      <header class="section-head">
+        <span class="eyebrow">Small API</span>
+        <h2>Entities, components, systems. That's the whole idea.</h2>
+        <p>An entity is a number. A component is a typed array you index by that number. A system is a function that runs every frame. Everything else (rendering, input, physics) comes from plugins that are plain functions too.</p>
+        <p><a class="link" href={href('/docs/guide/')}>Read the guide →</a></p>
+      </header>
+      <div class="code">
+        <Code code={sample} lang="ts" theme="vitesse-dark" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <header class="section-head">
+        <span class="eyebrow">Performance</span>
+        <h2>3.5× less main-thread time than Phaser</h2>
+        <p>Main-thread time per frame with 20,000 moving sprites, on a CPU throttled 4× to stand in for a mid-range phone. Lower is better; a 60 fps frame has 16.6 ms in total.</p>
+      </header>
+      <figure class="chart">
+        <figcaption class="sr-only">Milliseconds per frame at 20,000 sprites</figcaption>
+        {
+          bars.map((b) => (
+            <div class:list={['bar-row', { ours: b.ours }]}>
+              <span class="bar-label">{b.label}</span>
+              <span class="bar-track">
+                <span class="bar" style={`width:${(b.ms / max) * 100}%`} title={`${b.label}: ${b.ms} ms per frame`} />
+              </span>
+              <span class="bar-value">{b.ms.toFixed(2)} ms</span>
+            </div>
+          ))
+        }
+      </figure>
+      <details class="bench-table">
+        <summary>All results, 1,000 to 20,000 sprites</summary>
+        <table>
+          <thead>
+            <tr><th scope="col">Sprites</th><th scope="col">Ollin</th><th scope="col">Phaser GPU layer</th><th scope="col">Phaser Image</th></tr>
+          </thead>
+          <tbody>
+            {bench.map((r) => <tr><th scope="row">{r.sprites}</th><td>{r.ollin} ms</td><td>{r.layer} ms</td><td>{r.image} ms</td></tr>)}
+          </tbody>
+        </table>
+        <p>Phaser 4.2.1. Chromium with vsync on, Apple M4 Max, CPU throttled 4×. Reproduce it with <code>examples/bench</code> in the <a href="https://github.com/Tlapalli/ollin">engine repo</a>.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="section alt">
+    <div class="wrap">
+      <header class="section-head">
+        <span class="eyebrow">Batteries included</span>
+        <h2>Everything a 2D game needs, nothing it doesn't</h2>
+      </header>
+      <ul class="features">
+        {features.map((f) => <li class="card"><h3>{f.title}</h3><p>{f.body}</p></li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section cta">
+    <div class="wrap cta-inner">
+      <h2>Start a game in one command</h2>
+      <div class="install">
+        <code id="cmd2">npm create ollin@latest my-game</code>
+        <button type="button" data-copy="#cmd2" aria-label="Copy the command">Copy</button>
+      </div>
+      <a class="btn btn-primary" href={href('/docs/getting-started/')}>Follow the tutorial</a>
+    </div>
+  </section>
+</Studio>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
+    button.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(document.querySelector(button.dataset.copy!)!.textContent!)
+      button.textContent = 'Copied'
+      setTimeout(() => (button.textContent = 'Copy'), 1500)
+    })
+  }
+</script>
+
+<style>
+  .hero {
+    padding: clamp(3rem, 8vw, 6rem) 0;
+    background: radial-gradient(ellipse at 75% 40%, rgb(181 48 42 / 0.28), transparent 60%), var(--night);
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+  }
+  .hero-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.2rem;
+  }
+  .hero h1 {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+  }
+  .glyph {
+    width: clamp(52px, 7.5vw, 80px);
+    height: auto;
+    border-radius: 18%;
+  }
+  .tagline {
+    font: 600 clamp(1.3rem, 2.4vw, 1.75rem)/1.25 var(--display);
+    letter-spacing: -0.01em;
+  }
+  .hero-copy > p:not(.tagline) {
+    color: var(--ink-2);
+  }
+  .hero-art {
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+  .meta {
+    font-size: 0.88rem;
+    color: var(--ink-3) !important;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+  }
+  @media (max-width: 900px) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .install {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 440px;
+    padding: 0.45rem 0.45rem 0.45rem 1rem;
+    border-radius: 12px;
+    background: #0b080e;
+    border: 1px solid var(--line);
+  }
+  .install code {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    font: 500 0.95rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--amatl);
+  }
+  .install code::before {
+    content: '$ ';
+    color: var(--cempa);
+  }
+  .install button {
+    font: 600 0.8rem/1 var(--display);
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    border: 0;
+    background: var(--night-3);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .install button:hover {
+    background: var(--tlapalli);
+  }
+
+  .alt {
+    background: var(--night-2);
+  }
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+  }
+  .split .section-head {
+    margin: 0;
+  }
+  .link {
+    color: var(--cempa);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .code :global(pre) {
+    margin: 0;
+    padding: 1.4rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+  @media (max-width: 900px) {
+    .split {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .chart {
+    margin: 0;
+    display: grid;
+    gap: 1rem;
+    max-width: 880px;
+  }
+  .bar-row {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr) 80px;
+    gap: 1rem;
+    align-items: center;
+  }
+  .bar-label {
+    color: var(--ink-2);
+    font-size: 0.95rem;
+  }
+  .bar-track {
+    height: 28px;
+  }
+  .bar {
+    display: block;
+    height: 100%;
+    background: #5a4c63;
+    border-radius: 0 4px 4px 0;
+  }
+  .ours .bar {
+    background: var(--cempa);
+  }
+  .ours .bar-label,
+  .ours .bar-value {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .bar-value {
+    font: 500 0.95rem/1 ui-monospace, monospace;
+    color: var(--ink-2);
+    text-align: right;
+  }
+  @media (max-width: 620px) {
+    .bar-row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.4rem 0.8rem;
+    }
+    .bar-track {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+  }
+  .bench-table {
+    margin-top: 2rem;
+    max-width: 880px;
+    color: var(--ink-2);
+  }
+  .bench-table summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .bench-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .bench-table th,
+  .bench-table td {
+    text-align: right;
+    padding: 0.55rem 0.6rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .bench-table th:first-child {
+    text-align: left;
+  }
+  .bench-table p {
+    font-size: 0.88rem;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .features {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  .features li {
+    padding: 1.4rem;
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+    border-top: 3px solid var(--tlapalli);
+  }
+  .features li:nth-child(3n + 2) {
+    border-top-color: var(--xihuitl);
+  }
+  .features li:nth-child(3n) {
+    border-top-color: var(--cempa);
+  }
+  .features h3 {
+    font-size: 1.05rem;
+  }
+  .features p {
+    color: var(--ink-3);
+    font-size: 0.95rem;
+  }
+
+  .cta {
+    background: radial-gradient(ellipse at 50% 120%, rgb(242 140 40 / 0.25), transparent 60%), var(--night);
+    text-align: center;
+  }
+  .cta-inner {
+    display: grid;
+    justify-items: center;
+    gap: 1.5rem;
+  }
+  .cta h2 {
+    font-size: clamp(1.9rem, 4.4vw, 3rem);
+  }
+  .cta .install {
+    width: 100%;
+  }
+</style>

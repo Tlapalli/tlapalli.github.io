@@ -1,0 +1,314 @@
+---
+import { Image } from 'astro:assets'
+import Studio from '../layouts/Studio.astro'
+import Demo from '../components/Demo.astro'
+import { href } from '../href'
+import hero from '../assets/art/hero-studio.jpg'
+import xoloArt from '../assets/art/xolo-game.jpg'
+import engineArt from '../assets/art/ollin-engine.jpg'
+import craftArt from '../assets/art/studio-craft.jpg'
+---
+
+<Studio
+  title="Tlapalli · Game studio"
+  description="Tlapalli is a small game studio, proudly made in Mexico. We make games and the engine behind them, painted in the red and black ink of the Mexica codices."
+>
+  <section class="hero">
+    <Image src={hero} alt="" class="hero-art" widths={[960, 1600, 2400]} sizes="100vw" loading="eager" fetchpriority="high" />
+    <div class="hero-shade"></div>
+    <div class="wrap hero-copy">
+      <span class="eyebrow">Tlapalli · game studio · made in Mexico</span>
+      <h1>Games painted in red and black ink.</h1>
+      <p>We make games, and the engine that runs them. Our art comes from the Mexica codices; our code comes from caring about every millisecond.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="#games">Play Xolo ▸</a>
+        <a class="btn btn-ghost" href={href('/ollin/')}>Meet Ollin, our engine</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="greca" aria-hidden="true"></div>
+
+  <section class="section" id="games">
+    <div class="wrap">
+      <header class="section-head">
+        <span class="eyebrow">Our games</span>
+        <h2>Xolo</h2>
+        <p>A xoloitzcuintli, the dog that guides souls through Mictlan, gathers cempasúchil petals while obsidian spirits hunt it down. Three levels, three lives. Play it right here.</p>
+      </header>
+      <div class="game">
+        <Demo game="xolo" />
+        <aside class="game-card card">
+          <Image src={xoloArt} alt="Codex-style key art: the xolo runs through Mictlan collecting marigold petals" widths={[480, 800]} sizes="(max-width: 900px) 100vw, 380px" />
+          <dl>
+            <div><dt>Genre</dt><dd>Arcade</dd></div>
+            <div><dt>Status</dt><dd><span class="pill">Playable demo</span></dd></div>
+            <div><dt>Platform</dt><dd>Web, desktop and mobile</dd></div>
+            <div><dt>Made with</dt><dd><a href={href('/ollin/')}>Ollin</a></dd></div>
+          </dl>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="section tools">
+    <div class="wrap tool">
+      <Image src={engineArt} alt="The Nahui Ollin glyph turning like a machine, with small sprites orbiting it" class="tool-art" widths={[640, 1100]} sizes="(max-width: 900px) 100vw, 560px" />
+      <div class="tool-copy">
+        <span class="eyebrow">Our tools</span>
+        <h2>Ollin, the engine under our games</h2>
+        <p>We built Ollin because we wanted the frame budget for the game, not for the engine. It is a TypeScript 2D/2.5D engine with a data-oriented core, and it is open source, so you can make your games with it too.</p>
+        <ul class="stats">
+          <li><strong>3.5×</strong><span>less main-thread time than Phaser at 20,000 sprites</span></li>
+          <li><strong>75 KB</strong><span>package, with WebGL2 and WebGPU</span></li>
+          <li><strong>MIT</strong><span>open source, on npm today</span></li>
+        </ul>
+        <div class="actions">
+          <a class="btn btn-primary" href={href('/ollin/')}>Explore Ollin</a>
+          <a class="btn btn-ghost" href={href('/docs/getting-started/')}>Read the docs</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section paper" id="studio">
+    <div class="wrap studio">
+      <div>
+        <span class="eyebrow">The studio</span>
+        <h2>In tlilli, in tlapalli</h2>
+        <p class="say"><strong>Tlapalli</strong> · <span>tla-PAHL-lee</span> · <em>red ink</em> <small>The <em>tl</em> is one sound, like the end of <em>Nahuatl</em>: the tongue stays behind the teeth and the air slips out along its sides.</small></p>
+        <p class="lead">“The black ink, the red ink.” That is how the Nahua named the painted books, and through them, knowledge itself. <em>Tlapalli</em> is the red ink.</p>
+        <p>The <em>tlacuilo</em> painted the codices one glyph at a time: flat color, a confident black line, nothing wasted. We make games the same way: a small team, a clear line, and an engine that stays out of the way.</p>
+        <p>Tlapalli is proudly made in Mexico 🇲🇽.</p>
+        <ul class="values">
+          <li><strong>Handcrafted.</strong> Every sprite, every system, on purpose.</li>
+          <li><strong>Fast everywhere.</strong> A mid-range phone is our reference device.</li>
+          <li><strong>Open.</strong> Our engine and its docs are free for everyone.</li>
+        </ul>
+      </div>
+      <Image src={craftArt} alt="A tlacuilo's hand paints tiny figures on bark paper, next to pots of red and black ink" class="studio-art" widths={[480, 900]} sizes="(max-width: 900px) 100vw, 460px" />
+    </div>
+  </section>
+</Studio>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: min(88vh, 820px);
+    display: grid;
+    align-items: center;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .hero-art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 65% center;
+    z-index: -2;
+  }
+  .hero-shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(90deg, rgb(18 13 23 / 0.94) 0%, rgb(18 13 23 / 0.7) 42%, rgb(18 13 23 / 0) 72%),
+      linear-gradient(0deg, rgb(18 13 23 / 0.85) 0%, transparent 30%);
+  }
+  .hero-copy {
+    display: grid;
+    gap: 1.4rem;
+    padding: 5rem 0;
+  }
+  .hero-copy > * {
+    max-width: 600px;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6.4vw, 4.8rem);
+  }
+  .hero p {
+    font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+    color: var(--ink-2);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: 0.4rem;
+  }
+  @media (max-width: 720px) {
+    .hero-shade {
+      background: linear-gradient(0deg, rgb(18 13 23 / 0.97) 0%, rgb(18 13 23 / 0.85) 55%, rgb(18 13 23 / 0.35) 100%);
+    }
+    .hero {
+      align-items: end;
+    }
+  }
+
+  .game {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .game-card dl {
+    margin: 0;
+    padding: 1.2rem 1.4rem 1.4rem;
+    display: grid;
+    gap: 0.8rem;
+  }
+  .game-card dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.7rem;
+  }
+  .game-card dl div:last-child {
+    border: 0;
+    padding: 0;
+  }
+  .game-card dt {
+    color: var(--ink-3);
+  }
+  .game-card dd {
+    margin: 0;
+    text-align: right;
+  }
+  .pill {
+    font: 600 0.75rem/1 var(--display);
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    background: rgb(31 158 154 / 0.18);
+    color: #6fd6d2;
+  }
+  @media (max-width: 900px) {
+    .game {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .tools {
+    background: linear-gradient(180deg, var(--night) 0%, var(--night-2) 100%);
+  }
+  .tool {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: center;
+  }
+  .tool-art {
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+  .tool-copy {
+    display: grid;
+    gap: 1.2rem;
+  }
+  .tool-copy h2 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+  }
+  .tool-copy > p {
+    color: var(--ink-2);
+  }
+  .stats {
+    list-style: none;
+    margin: 0.4rem 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  .stats li {
+    display: grid;
+    gap: 0.3rem;
+    border-top: 3px solid var(--tlapalli);
+    padding-top: 0.8rem;
+  }
+  .stats strong {
+    font: 700 1.6rem/1 var(--display);
+    color: var(--cempa);
+  }
+  .stats span {
+    font-size: 0.88rem;
+    color: var(--ink-3);
+    line-height: 1.4;
+  }
+  @media (max-width: 900px) {
+    .tool {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 520px) {
+    .stats {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .studio {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: center;
+  }
+  .studio > div {
+    display: grid;
+    gap: 1.2rem;
+  }
+  .studio h2 {
+    font-size: clamp(2rem, 4.6vw, 3.2rem);
+  }
+  .say {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.6rem;
+    font: 500 1rem/1.4 var(--display);
+  }
+  .say span {
+    color: var(--tlapalli) !important;
+    font-weight: 700;
+  }
+  .say small {
+    flex-basis: 100%;
+    font: 400 0.9rem/1.5 var(--body);
+    color: #5b4f4b;
+  }
+  .lead {
+    font-size: 1.25rem;
+    color: var(--tlilli) !important;
+  }
+  .values {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+    display: grid;
+    gap: 0.7rem;
+  }
+  .values li {
+    padding-left: 1.4rem;
+    position: relative;
+  }
+  .values li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 0.6rem;
+    height: 0.6rem;
+    background: var(--tlapalli);
+    border-radius: 2px;
+    transform: rotate(45deg);
+  }
+  .studio-art {
+    border-radius: var(--radius);
+    box-shadow: 0 0 0 3px var(--tlilli), 12px 12px 0 var(--tlapalli);
+  }
+  @media (max-width: 900px) {
+    .studio {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

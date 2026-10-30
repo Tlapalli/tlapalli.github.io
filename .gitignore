@@ -22,3 +22,4 @@ pnpm-debug.log*
 
 # AI working files (local, per developer)
 .specs/
+.serena/
