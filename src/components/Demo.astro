@@ -1,31 +1,51 @@
 ---
-// A game running live on the published @tlapalli/ollin: `xolo` (the full game, examples/xolo in the engine repo)
-// or `starter` (the create-ollin template game).
+// Games running live on the published @tlapalli/ollin: our games (`xolo`, `ocelotl`, `mictlan`; copies of the engine
+// repo's examples) or `starter` (the create-ollin template game). Ollin keeps one live World per page, so a page has
+// one Demo, and the buttons of a `GamePicker` switch the game it runs (`demo:play` events).
+export type DemoGame = 'xolo' | 'ocelotl' | 'mictlan' | 'starter'
 interface Props {
-  game: 'xolo' | 'starter'
+  game: DemoGame
 }
 const { game } = Astro.props
-const hint =
-  game === 'xolo'
-    ? 'Click or tap to start. Arrows / WASD, a gamepad, or hold the mouse or a finger where the xolo should go. Sound on.'
-    : 'Mouse or finger: hold where the xolo should go. Keyboard: click the game, then ← → .'
-const label = game === 'xolo' ? 'Xolo, a playable game' : 'The create-ollin starter game, playable'
+const hints: Record<DemoGame, string> = {
+  xolo: 'Click or tap to start. Arrows / WASD, a gamepad, or hold the mouse or a finger where the xolo should go. Sound on.',
+  ocelotl: 'Click or tap to start. Arrows / WASD or a stick to move; Space / J or gamepad A throws darts at the nearest foe. Or hold a finger where to walk. Sound on.',
+  mictlan: 'Click or tap to start. Arrows to move, Z / Space to jump, X / J to strike; a gamepad works too. On touch: sides walk, top jumps, bottom-middle strikes. Sound on.',
+  starter: 'Mouse or finger: hold where the xolo should go. Keyboard: click the game, then ← → .',
+}
+const labels: Record<DemoGame, string> = {
+  xolo: 'Xolo, a playable game',
+  ocelotl: 'Ocelotl, a playable game',
+  mictlan: 'Mictlan, a playable game',
+  starter: 'The create-ollin starter game, playable',
+}
 ---
 
-<div class="demo" data-game={game}>
+<div class="demo" data-game={game} data-hints={JSON.stringify(hints)} data-labels={JSON.stringify(labels)}>
   <div class="demo-bar" aria-hidden="true">
     <span></span><span></span><span></span>
     <em>live · @tlapalli/ollin</em>
   </div>
-  <canvas tabindex="0" aria-label={label}></canvas>
-  <p class="demo-hint">{hint}</p>
+  <canvas tabindex="0" aria-label={labels[game]}></canvas>
+  <p class="demo-hint" aria-live="polite">{hints[game]}</p>
 </div>
 
 <script>
-  import { audio, createGame, input, webgl2 } from '@tlapalli/ollin'
+  import { audio, createGame, input, Renderer, webgl2, type Scene } from '@tlapalli/ollin'
 
-  for (const demo of document.querySelectorAll<HTMLElement>('.demo')) {
+  const scenes: Record<string, () => Promise<Scene>> = {
+    xolo: async () => (await import('../xolo/scenes')).menu,
+    ocelotl: async () => (await import('../ocelotl/scenes')).menu,
+    mictlan: async () => (await import('../mictlan/scenes')).menu,
+    starter: async () => (await import('../demo/game')).play,
+  }
+
+  const demo = document.querySelector<HTMLElement>('.demo')
+  if (demo) {
     const canvas = demo.querySelector('canvas')!
+    const hint = demo.querySelector('.demo-hint')!
+    const hints = JSON.parse(demo.dataset.hints!)
+    const labels = JSON.parse(demo.dataset.labels!)
     canvas.width = canvas.clientWidth * devicePixelRatio
     canvas.height = canvas.clientHeight * devicePixelRatio
     // Arrow keys, space and enter play the game instead of scrolling the page while the game has focus.
@@ -33,10 +53,28 @@ const label = game === 'xolo' ? 'Xolo, a playable game' : 'The create-ollin star
       if (e.code.startsWith('Arrow') || e.code === 'Space' || e.code === 'Enter') e.preventDefault()
     })
     canvas.addEventListener('pointerdown', () => canvas.focus({ preventScroll: true }))
-    const xolo = demo.dataset.game === 'xolo'
-    const plugins = [webgl2({ background: [0.07, 0.05, 0.09, 1] }), input(), ...(xolo ? [audio()] : [])]
-    const game = await createGame({ canvas, plugins })
-    await game.scene(xolo ? (await import('../xolo/scenes')).menu : (await import('../demo/game')).play)
+    const starter = demo.dataset.game === 'starter'
+    const game = await createGame({ canvas, plugins: [webgl2({ background: [0.07, 0.05, 0.09, 1] }), input(), ...(starter ? [] : [audio()])] })
+    const renderer = game.get(Renderer)
+    let playing = Promise.resolve()
+    const play = (name: string) =>
+      (playing = playing.then(async () => {
+        const scene = await scenes[name]()
+        demo.dataset.game = name
+        hint.textContent = hints[name]
+        canvas.setAttribute('aria-label', labels[name])
+        // Each game sets its own sorted and screen layers; start every game from a clean renderer.
+        await game.scene((g) => {
+          renderer.ySort.clear()
+          renderer.screen.clear()
+          return scene(g)
+        })
+      }))
+    document.addEventListener('demo:play', (e) => {
+      const name = (e as CustomEvent<string>).detail
+      if (name !== demo.dataset.game) void play(name).then(() => canvas.focus({ preventScroll: true }))
+    })
+    await play(demo.dataset.game!)
     game.start()
   }
 </script>

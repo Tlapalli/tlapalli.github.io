@@ -5,8 +5,37 @@ import Demo from '../components/Demo.astro'
 import { href } from '../href'
 import hero from '../assets/art/hero-studio.jpg'
 import xoloArt from '../assets/art/xolo-game.jpg'
+import ocelotlArt from '../assets/art/ocelotl-game.png'
+import mictlanArt from '../assets/art/mictlan-game.png'
 import engineArt from '../assets/art/ollin-engine.jpg'
 import craftArt from '../assets/art/studio-craft.jpg'
+
+const games = [
+  {
+    id: 'xolo',
+    name: 'Xolo',
+    pitch: 'A xoloitzcuintli, the dog that guides souls through Mictlan, gathers cempasúchil petals while obsidian spirits hunt it down. Three levels, three lives.',
+    art: xoloArt,
+    alt: 'Codex-style key art: the xolo runs through Mictlan collecting marigold petals',
+    genre: 'Arcade',
+  },
+  {
+    id: 'ocelotl',
+    name: 'Ocelotl',
+    pitch: 'A jaguar warrior holds a temple plaza through five nights of tzitzimime, star demons that find their way around every wall, and bats that fly over them. Isometric, with obsidian darts.',
+    art: ocelotlArt,
+    alt: 'Ocelotl in play: the jaguar warrior throws darts in an isometric temple plaza while skeletal star demons close in',
+    genre: 'Isometric action',
+  },
+  {
+    id: 'mictlan',
+    name: 'Mictlan',
+    pitch: 'Descend into the land of the dead with a macuahuitl. Break clay urns, outfight skeletons and bats, and face Itzpapalotl, the obsidian butterfly, at the bottom.',
+    art: mictlanArt,
+    alt: 'Mictlan in play: the warrior strikes at Itzpapalotl, the obsidian butterfly, in a pillared underworld hall',
+    genre: 'Action platformer',
+  },
+] as const
 ---
 
 <Studio
@@ -21,7 +50,7 @@ import craftArt from '../assets/art/studio-craft.jpg'
       <h1>Games painted in red and black ink.</h1>
       <p>We make games, and the engine that runs them. Our art comes from the Mexica codices; our code comes from caring about every millisecond.</p>
       <div class="actions">
-        <a class="btn btn-primary" href="#games">Play Xolo ▸</a>
+        <a class="btn btn-primary" href="#games">Play our games ▸</a>
         <a class="btn btn-ghost" href={href('/ollin/')}>Meet Ollin, our engine</a>
       </div>
     </div>
@@ -33,23 +62,51 @@ import craftArt from '../assets/art/studio-craft.jpg'
     <div class="wrap">
       <header class="section-head">
         <span class="eyebrow">Our games</span>
-        <h2>Xolo</h2>
-        <p>A xoloitzcuintli, the dog that guides souls through Mictlan, gathers cempasúchil petals while obsidian spirits hunt it down. Three levels, three lives. Play it right here.</p>
+        <h2>Three games, playable right here</h2>
+        <p>Small games we make to put our engine through real work. Each one taught Ollin something new. Pick one and play.</p>
       </header>
+      <div class="picker" role="tablist" aria-label="Choose a game">
+        {games.map((g, i) => (
+          <button role="tab" type="button" class="pick" data-play={g.id} aria-selected={i === 0 ? 'true' : 'false'} aria-controls="game-card">
+            {g.name}<small>{g.genre}</small>
+          </button>
+        ))}
+      </div>
       <div class="game">
         <Demo game="xolo" />
-        <aside class="game-card card">
-          <Image src={xoloArt} alt="Codex-style key art: the xolo runs through Mictlan collecting marigold petals" widths={[480, 800]} sizes="(max-width: 900px) 100vw, 380px" />
-          <dl>
-            <div><dt>Genre</dt><dd>Arcade</dd></div>
-            <div><dt>Status</dt><dd><span class="pill">Playable demo</span></dd></div>
-            <div><dt>Platform</dt><dd>Web, desktop and mobile</dd></div>
-            <div><dt>Made with</dt><dd><a href={href('/ollin/')}>Ollin</a></dd></div>
-          </dl>
-        </aside>
+        <div id="game-card">
+          {games.map((g, i) => (
+            <aside class="game-card card" data-card={g.id} hidden={i !== 0}>
+              <Image src={g.art} alt={g.alt} widths={[480, 800]} sizes="(max-width: 900px) 100vw, 380px" class={g.id === 'xolo' ? undefined : 'pixel'} />
+              <div class="game-copy">
+                <h3>{g.name}</h3>
+                <p>{g.pitch}</p>
+              </div>
+              <dl>
+                <div><dt>Genre</dt><dd>{g.genre}</dd></div>
+                <div><dt>Status</dt><dd><span class="pill">Playable demo</span></dd></div>
+                <div><dt>Platform</dt><dd>Web, desktop and mobile</dd></div>
+                <div><dt>Made with</dt><dd><a href={href('/ollin/')}>Ollin</a></dd></div>
+              </dl>
+            </aside>
+          ))}
+        </div>
       </div>
     </div>
   </section>
+
+  <script>
+    // The picker swaps the card and asks the Demo to switch games (one live game per page).
+    const picks = document.querySelectorAll<HTMLButtonElement>('.pick')
+    for (const pick of picks) {
+      pick.addEventListener('click', () => {
+        const id = pick.dataset.play!
+        for (const p of picks) p.setAttribute('aria-selected', String(p === pick))
+        for (const card of document.querySelectorAll<HTMLElement>('[data-card]')) card.hidden = card.dataset.card !== id
+        document.dispatchEvent(new CustomEvent('demo:play', { detail: id }))
+      })
+    }
+  </script>
 
   <section class="section tools">
     <div class="wrap tool">
@@ -152,6 +209,62 @@ import craftArt from '../assets/art/studio-craft.jpg'
     grid-template-columns: minmax(0, 1fr) 360px;
     gap: 1.5rem;
     align-items: start;
+  }
+  .picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1.2rem;
+  }
+  .pick {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    padding: 0.7rem 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--ink);
+    font: 600 1rem/1.1 var(--display);
+    cursor: pointer;
+  }
+  .pick small {
+    font: 500 0.75rem/1 var(--body, inherit);
+    color: var(--ink-3);
+  }
+  .pick:hover {
+    border-color: rgb(243 230 201 / 0.35);
+  }
+  .pick[aria-selected='true'] {
+    border-color: #f28c28;
+    background: rgb(242 140 40 / 0.12);
+  }
+  @media (max-width: 600px) {
+    .pick {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 0.6rem 0.7rem;
+    }
+  }
+  .pick:focus-visible {
+    outline: 2px solid #f28c28;
+    outline-offset: 2px;
+  }
+  .game-copy {
+    padding: 1.1rem 1.4rem 0;
+  }
+  .game-copy h3 {
+    margin: 0 0 0.4rem;
+    font-family: var(--display);
+  }
+  .game-copy p {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 0.95rem;
+  }
+  .game-card :global(img.pixel) {
+    image-rendering: pixelated;
   }
   .game-card dl {
     margin: 0;
