@@ -128,6 +128,14 @@ world.spawn(
 - `frame` picks a cell of a spritesheet (see [Assets](#assets)), counting left to right, top to bottom.
 - `tint` multiplies the image by a color (`0xRRGGBB`). On white art you get exactly that color; on colored art it darkens. Draw things you want to recolor in white or gray.
 - `alpha` fades from 0 (invisible) to 1. `flipX` and `flipY` mirror the image, e.g. to face a character left. They cost nothing.
+- Without a `texture`, a sprite is a solid rectangle in its `tint`: panels behind text, health bars, screen fades.
+
+  ```ts
+  // A dark band behind the HUD, and a boss health bar you shrink by changing its width.
+  world.spawn([Position, { x: canvas.width / 2, y: 20, z: HUD }], [Sprite, { w: canvas.width, h: 40, tint: 0x0b0a0c, alpha: 0.6 }])
+  const bar = world.spawn([Position, { x: 400, y: 20, z: HUD }], [Sprite, { w: 200, h: 8, tint: 0x7a4fa0 }])
+  Sprite.w[bar] = 200 * (hp / maxHp)
+  ```
 
 **Animation** plays frames of a spritesheet:
 
@@ -211,7 +219,20 @@ input.pointers                     // Map of every pressed finger: multi-touch
 input.gamepads[0]?.axes[0]         // left stick, -1 to 1 (standard mapping)
 ```
 
-Read `pressed` in `update` systems; it is cleared at the end of every frame. The input plugin stops touches on the canvas from scrolling or zooming the page.
+Read `pressed` in `update` systems; it is cleared at the end of every frame. A frame can run zero or several `fixed` ticks, so logic in `fixed` (a platformer's jump) should not read `pressed` directly: note the press in an `update` system and let the fixed step consume it:
+
+```ts
+let jumpBuffer = 0
+game.system((dt) => {
+  if (input.pressed.has('Space')) jumpBuffer = 0.12  // remember the press for 120 ms
+  jumpBuffer -= dt
+})
+game.system(() => {
+  if (jumpBuffer > 0 && grounded) (vy = -JUMP), (jumpBuffer = 0)
+}, 'fixed')
+```
+
+The input plugin stops touches on the canvas from scrolling or zooming the page.
 
 Gamepads use the standard mapping. `buttons[0]` is the bottom face button (A, cross), `buttons[9]` is start, and `buttons[12..15]` are the d-pad (up, down, left, right).
 
@@ -253,7 +274,14 @@ overlaps(player, spike, 4)                   // shrink both boxes by 4 px per si
 const enemy = hit(player, enemies.entities)  // the first one touching, or -1
 ```
 
-These ignore rotation and check one entity against a list. For things that must push, bounce or stack, use physics.
+These ignore rotation and check one entity against a list. For walls and floors made of tiles, test the map instead (see [Tiled maps](#tiled-maps)):
+
+```ts
+const solid = (x: number, y: number) => map.tileAt('walls', x, y) >= 0
+if (!solid(Position.x[e] + dx, Position.y[e] + Sprite.h[e] / 2)) Position.x[e] += dx  // move unless the feet hit a wall
+```
+
+Moving each axis separately like this lets characters slide along walls. For things that must push, bounce or stack, use physics.
 
 ## Physics with Rapier
 
@@ -300,6 +328,20 @@ map.objects.find((o) => o.name === 'player')  // { x, y, z, width, height, prope
 - Each tile is an entity with `z = layer index`, so later layers draw on top.
 - Hidden layers spawn `Position` only, which makes them handy for invisible collision.
 - In isometric maps, object positions are converted to screen pixels.
+- Tiles flipped in Tiled (horizontally or vertically) come out with `Sprite.flipX`/`flipY` set. Rotated tiles are drawn unrotated.
+
+**Tile lookups.** The map knows its grid, so collision and pathfinding never need your own copy of it:
+
+```ts
+map.tileAt('walls', x, y)       // the tile entity of a layer under a world point, or -1 (also for hidden layers)
+map.cellAt(x, y)                // { col, row } under a world point
+map.cellCenter(col, row)        // the world point at the middle of a cell
+map.cols, map.rows              // grid size in cells
+```
+
+On isometric maps these work on the diamond cells, so test a character's feet (`y + h / 2`), not its center: tall tiles like walls and trees grow upward from their cell. A despawned tile reads as -1, so breakable walls work by despawning them.
+
+For enemies that walk around walls, run a breadth-first search over the cells from the player's cell and send each enemy to the neighbor cell one step closer (`examples/ocelotl` in the engine repo does this in about 40 lines).
 
 ## Audio
 
