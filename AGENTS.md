@@ -27,4 +27,5 @@ npm run build    # must pass before calling a change done
 ## Content
 
 - `docs/getting-started.md` (tutorial over the `create-ollin` template) and `docs/guide.md` (every feature with code) are the engine's user docs. When the engine's public API changes, update them in the same release, and check every snippet against the engine code.
+- `docs/api/` is the API reference, generated at build time by `starlight-typedoc` from the installed `@tlapalli/ollin` typings (entry files in `src/api/`, config in `astro.config.mjs`). It is gitignored; never edit it by hand. Fix wording in the engine's doc comments instead, and it updates when the site bumps the package.
 - The playable demo (`src/components/Demo.astro`) runs `src/demo/game.ts`, a copy of `create-ollin/template/src/game.ts` from the engine repo (images imported with `?url`), on the published `@tlapalli/ollin`. Keep the copy in sync when the template changes.

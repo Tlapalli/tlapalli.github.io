@@ -23,3 +23,6 @@ pnpm-debug.log*
 # AI working files (local, per developer)
 .specs/
 .serena/
+
+# generated API reference (starlight-typedoc)
+src/content/docs/docs/api/

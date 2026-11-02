@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "lib": [
+      "ES2024",
+      "DOM"
+    ],
+    "skipLibCheck": true
+  },
+  "files": [
+    "src/api/ollin.ts",
+    "src/api/rapier.ts"
+  ]
+}
