@@ -13,7 +13,7 @@
     "@astrojs/starlight": "^0.42.8",
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource-variable/unbounded": "^5.3.0",
-    "@tlapalli/ollin": "^0.1.0-alpha.0",
+    "@tlapalli/ollin": "^0.1.0-alpha.1",
     "astro": "^7.2.10",
     "sharp": "^0.35.3",
     "starlight-typedoc": "^0.23.1",
