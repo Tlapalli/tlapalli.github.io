@@ -12,6 +12,7 @@
   },
   "files": [
     "src/api/ollin.ts",
-    "src/api/rapier.ts"
+    "src/api/rapier.ts",
+    "src/api/vite.ts"
   ]
 }

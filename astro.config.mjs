@@ -20,7 +20,7 @@ export default defineConfig({
       // so it always matches the version the site depends on.
       plugins: [
         starlightTypeDoc({
-          entryPoints: ['src/api/ollin.ts', 'src/api/rapier.ts'],
+          entryPoints: ['src/api/ollin.ts', 'src/api/rapier.ts', 'src/api/vite.ts'],
           tsconfig: './tsconfig.api.json',
           output: 'docs/api',
           sidebar: { label: 'API reference', collapsed: true },
