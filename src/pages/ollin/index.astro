@@ -25,29 +25,37 @@ game.system((dt) => {
 game.start()`
 
 // examples/bench in the engine repo: main-thread ms per frame, Chromium, vsync on, Apple M4 Max with the CPU throttled 4x.
+// Median of 3 runs in random order; same numbers as the engine README.
 const bench = [
-  { sprites: '1,000', ollin: 0.07, image: 0.33, layer: 0.16 },
-  { sprites: '5,000', ollin: 0.28, image: 1.58, layer: 0.9 },
-  { sprites: '10,000', ollin: 0.78, image: 2.94, layer: 1.93 },
-  { sprites: '20,000', ollin: 1.97, image: 7.06, layer: 3.99 },
+  { sprites: '1,000', ollin: 0.03, particles: 0.04, pixi: 0.18, layer: 0.17, image: 0.24 },
+  { sprites: '5,000', ollin: 0.09, particles: 0.12, pixi: 1.16, layer: 0.95, image: 1.64 },
+  { sprites: '10,000', ollin: 0.14, particles: 0.23, pixi: 2.48, layer: 1.9, image: 2.83 },
+  { sprites: '20,000', ollin: 0.47, particles: 0.62, pixi: 6.48, layer: 3.87, image: 6.77 },
+  { sprites: '50,000', ollin: 1.32, particles: 1.58, pixi: 18.7, layer: 10.59, image: 23.93 },
 ]
 const top = bench[3]
 const bars = [
   { label: 'Ollin', ms: top.ollin, ours: true },
+  { label: 'PixiJS 8 · ParticleContainer', ms: top.particles },
   { label: 'Phaser 4 · GPU layer', ms: top.layer },
+  { label: 'PixiJS 8 · Sprites', ms: top.pixi },
   { label: 'Phaser 4 · Image objects', ms: top.image },
 ]
 const max = Math.max(...bars.map((b) => b.ms))
 
 const features = [
-  { title: 'Data-oriented ECS', body: 'Components are typed arrays that go straight to the GPU. No objects per sprite, no garbage per frame.' },
+  { title: 'Data-oriented ECS', body: 'Components are typed arrays the shaders read as they are. No objects per sprite, no packing, no garbage per frame.' },
   { title: 'WebGL2 and WebGPU', body: 'One renderer core, two backends with the same API and output. WebGPU falls back to WebGL2.' },
   { title: 'Smooth on 120 Hz', body: 'A fixed-step simulation, drawn interpolated, so motion stays smooth on any display.' },
   { title: 'Rapier physics', body: 'Dynamic, fixed and kinematic bodies through WASM, as an optional plugin.' },
   { title: '2.5D and Tiled', body: 'z layers, y-sorted layers, and orthogonal or isometric maps from Tiled.' },
-  { title: 'GPU particles', body: 'Bursts computed entirely in the vertex shader: zero CPU work per frame.' },
+  { title: 'GPU particles', body: 'Bursts computed entirely in the vertex shader: zero CPU work per frame. Additive layers make them glow.' },
+  { title: 'Aseprite atlases', body: 'Packed spritesheets from Aseprite or TexturePacker, trimmed frames included, with tags as ready animations.' },
+  { title: 'Declare once', body: 'List textures, sounds, fonts and maps in a .ollin file; the Vite plugin loads them typed and checks every path.' },
   { title: 'Text with accents', body: 'Bitmap text from any web font, with á, ñ, ¿¡ and Nahuatl macron vowels.' },
   { title: 'Hot reload and devtools', body: 'Save and the scene restarts in place. Inspect any sprite with one click.' },
+  { title: 'Every input', body: 'Keyboard, mouse, multi-touch and gamepads as plain state you read in your systems.' },
+  { title: 'Tweens and timers', body: 'Animate any component field with easing, or run code later, without callbacks to clean up.' },
 ]
 ---
 
@@ -107,7 +115,7 @@ const features = [
     <div class="wrap">
       <header class="section-head">
         <span class="eyebrow">Performance</span>
-        <h2>3.5× less main-thread time than Phaser</h2>
+        <h2>Faster than PixiJS and Phaser</h2>
         <p>Main-thread time per frame with 20,000 moving sprites, on a CPU throttled 4× to stand in for a mid-range phone. Lower is better; a 60 fps frame has 16.6 ms in total.</p>
       </header>
       <figure class="chart">
@@ -125,16 +133,16 @@ const features = [
         }
       </figure>
       <details class="bench-table">
-        <summary>All results, 1,000 to 20,000 sprites</summary>
+        <summary>All results, 1,000 to 50,000 sprites</summary>
         <table>
           <thead>
-            <tr><th scope="col">Sprites</th><th scope="col">Ollin</th><th scope="col">Phaser GPU layer</th><th scope="col">Phaser Image</th></tr>
+            <tr><th scope="col">Sprites</th><th scope="col">Ollin</th><th scope="col">Pixi ParticleContainer</th><th scope="col">Pixi Sprites</th><th scope="col">Phaser GPU layer</th><th scope="col">Phaser Image</th></tr>
           </thead>
           <tbody>
-            {bench.map((r) => <tr><th scope="row">{r.sprites}</th><td>{r.ollin} ms</td><td>{r.layer} ms</td><td>{r.image} ms</td></tr>)}
+            {bench.map((r) => <tr><th scope="row">{r.sprites}</th><td>{r.ollin} ms</td><td>{r.particles} ms</td><td>{r.pixi} ms</td><td>{r.layer} ms</td><td>{r.image} ms</td></tr>)}
           </tbody>
         </table>
-        <p>Phaser 4.2.1. Chromium with vsync on, Apple M4 Max, CPU throttled 4×. Reproduce it with <code>examples/bench</code> in the <a href="https://github.com/Tlapalli/ollin">engine repo</a>.</p>
+        <p>PixiJS 8.23 and Phaser 4.2.1. Pixi's ParticleContainer moves positions only; Ollin keeps per-sprite tint, alpha, flip, rotation and frame live. Chromium with vsync on, Apple M4 Max, CPU throttled 4×. Reproduce it with <code>examples/bench</code> in the <a href="https://github.com/Tlapalli/ollin">engine repo</a>.</p>
       </details>
     </div>
   </section>

@@ -31,6 +31,45 @@ game.get(Score).value++
 
 `createGame` options: `capacity` (initial entity capacity, default 16,384; the world doubles it when full) and `fixedDt` (seconds per fixed step, default 1/60).
 
+## Declaring a game in a .ollin file
+
+Instead of creating the game and loading assets in code, you can declare them once in a `.ollin` file, one directive per line:
+
+```
+// game.ollin
+#game(width: 1280, height: 720, background: #1b1b1b, pixelArt: true)
+
+#texture tiles ./art/tiles.png  (frame: 16x16)
+#atlas   hero  ./art/hero.json
+#sound   jump  ./sfx/jump.wav
+#font    ui    (family: "monospace", size: 16)
+#map     level /maps/level.tmj
+```
+
+Add the plugin to `vite.config.ts` and import the file:
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import { ollin } from '@tlapalli/ollin/vite'
+
+export default defineConfig({ plugins: [ollin()] })
+```
+
+```ts
+import { assets, game } from './game.ollin'
+
+game.world.spawn([Position, { x: 100, y: 100 }], [Sprite, assets.hero.sprite('idle 0')])
+game.get(Audio).play(assets.jump)
+```
+
+- The plugin turns the file into a module that creates the game (canvas, renderer, input, and audio when you declare sounds) and loads everything in parallel. `game` and `assets` are ready when the import finishes.
+- It writes `game.ollin.d.ts` next to the file, so `assets.hero` is typed (`Atlas`) and your editor completes it. Commit that file.
+- A missing file, an unknown directive or a wrong option stops the build with the file and line: `game.ollin:6: #texture walker: file not found: ./walkr.png`.
+- `#game` takes `width`, `height`, `background` (`#rrggbb`), `renderer` (`webgl2` or `webgpu`), `pixelArt` (crisp filtering for every asset), `devtools`, `canvas` (a CSS selector) and `capacity`. `#texture` takes `frame` (`16x16`), `margin`, `spacing` and `filter`; `#font` the same options as `loadFont`; `#map` a `z`.
+- Relative paths are bundled by Vite. Paths that start with `/` come from `public/`: put Tiled maps there, because Vite cannot see the tileset images inside a map.
+- Directives only declare things; there are no variables or expressions. Game logic stays in TypeScript.
+
 ## Entities, components and queries
 
 ```ts
@@ -146,6 +185,8 @@ Animation.time[e] = 0     // restart from the first frame
 Animation.once[e] = 1     // play once and hold the last frame
 ```
 
+With an [atlas](#assets), Aseprite tags are ready-made animations: `[Animation, hero.tags.run]`.
+
 ## Drawing order, 2.5D and screen layers
 
 Higher `Position.z` draws on top. Sprites with the same `z` are drawn together in as few GPU calls as possible.
@@ -157,6 +198,12 @@ renderer.ySort.add(1) // sprites on z = 1 draw in order of their bottom edge
 ```
 
 Put everything that should interleave (characters, trees, walls) on that one layer.
+
+**Additive layers** add their colors to what is behind them instead of covering it, for glows, fire, magic and sparks. Particles on the layer blend the same way. Black adds nothing, so draw additive art on black or with alpha:
+
+```ts
+renderer.additive.add(5) // sprites and particles on z = 5 glow
+```
 
 **Screen layers** ignore the camera and use canvas pixels, for HUDs and menus that stay put while the world scrolls:
 
@@ -205,6 +252,17 @@ world.spawn([Position], [Sprite, { w: 16, h: 16, texture: textures.tiles, frame:
 - `frameWidth`/`frameHeight` turn an image into a grid of frames. `margin` and `spacing` match Tiled's settings.
 - `filter: 'nearest'` keeps pixel art crisp.
 - With Vite, import images (`import heroUrl from './hero.png'`) or use `new URL('./hero.png', import.meta.url).href`.
+
+**Atlases** are packed spritesheets, the JSON and image that Aseprite (File > Export Sprite Sheet, with JSON data) or TexturePacker (JSON hash or array) export. Frames can have any size and be trimmed:
+
+```ts
+const hero = await renderer.loadAtlas(heroJsonUrl, { filter: 'nearest' })
+world.spawn([Position], [Sprite, hero.sprite('idle 0')], [Animation, hero.tags.run])
+```
+
+- `hero.sprite(name)` gives the texture, frame and untrimmed size of a frame by its name in the JSON; an unknown name throws.
+- `hero.tags` turns each Aseprite tag into `Animation` values (first frame, count and fps from the frame durations). Tags play forward.
+- `hero.frames[name]` is the frame index, for `Sprite.frame`.
 
 ## Input
 
@@ -263,6 +321,7 @@ renderer.burst({ x, y, z: 2, texture: textures.spark, tint: 0xf28c28, count: 16,
 - They are not entities: you can't query or collide with them.
 - They draw after the sprites of their `z` layer and keep flying through scene changes until they fade.
 - Use small white textures so `tint` gives them any color.
+- Fire them on an [additive layer](#drawing-order-25d-and-screen-layers) to make them glow.
 
 ## Collisions
 
@@ -371,7 +430,7 @@ plugins: [webgl2(), input(), ...(import.meta.env.DEV ? [devtools({ components: {
 
 ## Performance
 
-Ollin is built to keep the main thread free. At 20,000 moving sprites it spends about 12% of a 60 fps frame on a throttled CPU, against 42% for Phaser 4 (README, Performance). To keep it that way in your game:
+Ollin is built to keep the main thread free. At 20,000 moving sprites it spends about 3% of a 60 fps frame on a throttled CPU, against 41% for Phaser 4 and 39% for PixiJS 8 sprites (README, Performance). The shaders read each sprite's components straight from the ECS arrays, so the CPU never repacks sprites, and batches are rebuilt only when sprites come or go or change `z` or texture. To keep it that way in your game:
 
 - Keep per-entity data in components, not in objects or `Map`s.
 - Create queries once, outside systems.
